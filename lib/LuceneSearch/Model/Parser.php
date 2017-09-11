@@ -841,20 +841,27 @@ class Parser
                 }
             }
 
-            if ($categories !== FALSE) {
-                $validCategories = \LuceneSearch\Model\Configuration::get('frontend.categories');
-                if (!empty($validCategories)) {
-                    $validIds = [];
-                    $categoryIds = explode(',', $categories);
+            if(empty($validCategories)) {
+                // allow every category
+                $categoryIds = explode(',', $categories);
+                if(!empty($categoryIds)) {
                     foreach ($categoryIds as $categoryId) {
-                        if (in_array($categoryId, $validCategories)) {
-                            $validIds[] = $categoryId;
-                            $doc->addField(\Zend_Search_Lucene_Field::Keyword('category_' . $categoryId, 'category_' . $categoryId));
-                        }
+                        $doc->addField(\Zend_Search_Lucene_Field::Keyword('category_' . $categoryId, 'category_' . $categoryId));
                     }
-                    if (!empty($validIds)) {
-                        $doc->addField(\Zend_Search_Lucene_Field::Text('categories', implode(',', $validIds)));
+                    $doc->addField(\Zend_Search_Lucene_Field::Text('categories', implode(',', $categoryIds)));
+                }
+
+            } else { // allow only defined categories
+                $validIds = [];
+                $categoryIds = explode(',', $categories);
+                foreach ($categoryIds as $categoryId) {
+                    if(in_array($categoryId, $validCategories)) {
+                        $validIds[] = $categoryId;
+                        $doc->addField(\Zend_Search_Lucene_Field::Keyword('category_' . $categoryId, 'category_' . $categoryId));
                     }
+                }
+                if(!empty($validIds)) {
+                    $doc->addField(\Zend_Search_Lucene_Field::Text('categories', implode(',', $validIds)));
                 }
             }
 
