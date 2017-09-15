@@ -50,34 +50,36 @@ class Executer
                 self::setCrawlerState('frontend', 'started', TRUE);
 
                 try {
+
+                    $parser = new Parser($logEngine);
+                    $parser
+                        ->setDepth(Configuration::get('frontend.crawler.maxLinkDepth'))
+                        ->setValidLinkRegexes(Configuration::get('frontend.validLinkRegexes'))
+                        ->setContentMaxSize(Configuration::get('frontend.crawler.contentMaxSize'))
+                        ->setInvalidLinkRegexes($invalidLinkRegex)
+                        ->setSearchStartIndicator(Configuration::get('frontend.crawler.contentStartIndicator'))
+                        ->setSearchEndIndicator(Configuration::get('frontend.crawler.contentEndIndicator'))
+                        ->setSearchExcludeStartIndicator(Configuration::get('frontend.crawler.contentExcludeStartIndicator'))
+                        ->setSearchExcludeEndIndicator(Configuration::get('frontend.crawler.contentExcludeEndIndicator'))
+                        ->setAllowSubdomain(FALSE)
+                        ->setValidMimeTypes(Configuration::get('frontend.allowedMimeTypes'))
+                        ->setAllowedSchemes(Configuration::get('frontend.allowedSchemes'))
+                        ->setDownloadLimit(Configuration::get('frontend.crawler.maxDownloadLimit'))
+                        ->setDocumentBoost(Configuration::get('boost.documents'))
+                        ->setAssetBoost(Configuration::get('boost.assets'));
+
+                    if (Configuration::get('frontend.auth.useAuth') === TRUE) {
+                        $parser->setAuth(Configuration::get('frontend.auth.username'), Configuration::get('frontend.auth.password'));
+                    }
+
                     foreach ($urls as $seed) {
 
-                        $parser = new Parser($logEngine);
-                        $parser
-                            ->setDepth(Configuration::get('frontend.crawler.maxLinkDepth'))
-                            ->setValidLinkRegexes(Configuration::get('frontend.validLinkRegexes'))
-                            ->setContentMaxSize(Configuration::get('frontend.crawler.contentMaxSize'))
-                            ->setInvalidLinkRegexes($invalidLinkRegex)
-                            ->setSearchStartIndicator(Configuration::get('frontend.crawler.contentStartIndicator'))
-                            ->setSearchEndIndicator(Configuration::get('frontend.crawler.contentEndIndicator'))
-                            ->setSearchExcludeStartIndicator(Configuration::get('frontend.crawler.contentExcludeStartIndicator'))
-                            ->setSearchExcludeEndIndicator(Configuration::get('frontend.crawler.contentExcludeEndIndicator'))
-                            ->setAllowSubdomain(FALSE)
-                            ->setValidMimeTypes(Configuration::get('frontend.allowedMimeTypes'))
-                            ->setAllowedSchemes(Configuration::get('frontend.allowedSchemes'))
-                            ->setDownloadLimit(Configuration::get('frontend.crawler.maxDownloadLimit'))
-                            ->setDocumentBoost(Configuration::get('boost.documents'))
-                            ->setAssetBoost(Configuration::get('boost.assets'))
-                            ->setSeed($seed);
-
-                        if (Configuration::get('frontend.auth.useAuth') === TRUE) {
-                            $parser->setAuth(Configuration::get('frontend.auth.username'), Configuration::get('frontend.auth.password'));
-                        }
-
+                        $parser->setSeed($seed);
                         $parser->startParser();
-                        $parser->optimizeIndex();
-
                     }
+
+                    $parser->optimizeIndex();
+
                 } catch (\Exception $e) {
                 }
 
