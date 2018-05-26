@@ -805,6 +805,22 @@ class Parser
                 $field->boost = 10;
                 $doc->addField($field);
             }
+            
+            //add h2 to index
+            $headlines = [];
+            preg_match_all('@(<h2[^>]*?>[ \t\n\r\f]*(.*?)[ \t\n\r\f]*' . '</h2>)@si', $html, $headlines);
+
+            if (is_array($headlines[2])) {
+                $h2 = '';
+                foreach ($headlines[2] as $headline) {
+                    $h2 .= $headline . ' ';
+                }
+
+                $h2 = strip_tags($h2);
+                $field = \Zend_Search_Lucene_Field::Text('h2', $h2, $encoding);
+                $field->boost = 10;
+                $doc->addField($field);
+            }
 
             $imageTags = $this->extractImageAltText($html);
 
